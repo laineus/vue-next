@@ -19,7 +19,7 @@ import {
   toRaw,
   toReactive,
 } from './reactive'
-import type { ComputedRef, WritableComputedRef } from './computed'
+import { type ComputedRef, type WritableComputedRef } from './computed'
 import { ReactiveFlags, TrackOpTypes, TriggerOpTypes } from './constants'
 import { warn } from './warning'
 
@@ -541,9 +541,22 @@ export interface RefUnwrapBailTypes {}
 
 export type ShallowUnwrapRef<T> = T extends ShallowReactiveBrand
   ? T
-  : {
-      [K in keyof T]: DistributeRef<T[K]>
-    }
+  : { [K in keyof T]: DistributeRef<T[K]> } extends infer Unwrapped extends
+        object
+    ? Omit<
+        Unwrapped,
+        { [K in keyof T]: T[K] extends ComputedRef ? K : never }[keyof T]
+      > &
+        Readonly<
+          Pick<
+            Unwrapped,
+            { [K in keyof T]: T[K] extends ComputedRef ? K : never }[keyof T] &
+              keyof Unwrapped
+          >
+        > extends infer U
+      ? { [K in keyof U]: U[K] }
+      : never
+    : never
 
 type DistributeRef<T> = T extends Ref<infer V, unknown> ? V : T
 

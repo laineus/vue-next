@@ -320,6 +320,11 @@ expectType<number>(p2.c)
 expectType<undefined>(p2.u)
 expectType<Ref<string>>(p2.obj.k)
 expectType<{ name: string } | null>(p2.union)
+// ref property should be writable
+p2.a = 2
+// computed property should be readonly
+// @ts-expect-error computed ref should be readonly after unwrap
+p2.c = 2
 
 const r3 = shallowReactive({
   n: ref(1),
